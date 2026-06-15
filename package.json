@@ -1,0 +1,21 @@
+{
+  "name": "seo-audit-app",
+  "version": "1.0.0",
+  "description": "SEO Audit and Competitor Analysis Tool",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["seo", "audit", "competitor", "analysis"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "http-proxy-agent": "^7.0.0",
+    "https-proxy-agent": "^7.0.0"
+  }
+}

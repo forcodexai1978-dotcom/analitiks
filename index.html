@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO-аудит и анализ конкурентов</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">📊 SEO Audit Pro</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Главная форма -->
+        <div id="mainForm" class="section">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">Анализ сайта</h2>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group input-group-lg mb-3">
+                                <input type="url" id="urlInput" class="form-control"
+                                       placeholder="Введите URL вашего сайта (например, https://example.com)"
+                                       aria-label="URL сайта">
+                                <button class="btn btn-primary" type="button" id="analyzeBtn">
+                                    <span id="btnText">Запустить анализ</span>
+                                    <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="errorMessage" class="alert alert-danger d-none mt-3"></div>
+                    <div id="loadingBar" class="progress d-none mt-3">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Отчёт по моему сайту -->
+        <div id="reportSection" class="section d-none">
+            <h2 class="mb-4">Отчёт по сайту: <span id="reportUrl" class="text-primary"></span></h2>
+
+            <!-- SEO блок -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">🔍 SEO-анализ</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Title:</strong><br>
+                            <span id="seoTitle" class="text-break"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Meta Description:</strong><br>
+                            <span id="seoDescription" class="text-break"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Meta Keywords:</strong><br>
+                            <span id="seoKeywords" class="text-break"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>H1:</strong><br>
+                            <span id="seoH1"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>H2-H6 (всего):</strong><br>
+                            <span id="seoHeadings"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Индексация (noindex):</strong><br>
+                            <span id="seoNoindex" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Наличие robots.txt/sitemap.xml:</strong><br>
+                            <span id="seoRobots" class="badge bg-info"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Canonical URL:</strong><br>
+                            <span id="seoCanonical" class="text-break"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Friendly URLs:</strong><br>
+                            <span id="seoFriendly" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Alt-теги у изображений:</strong><br>
+                            <span id="seoAlt"></span>
+                            <div class="progress mt-2">
+                                <div id="seoAltBar" class="progress-bar" role="progressbar"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Внутренние ссылки:</strong><br>
+                            <span id="seoInternalLinks" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Внешние ссылки:</strong><br>
+                            <span id="seoExternalLinks" class="badge bg-secondary"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Технический блок -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">⚙️ Технический анализ</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>HTTP статус:</strong><br>
+                            <span id="techStatus" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>SSL сертификат:</strong><br>
+                            <span id="techSSL" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Время загрузки:</strong><br>
+                            <span id="techLoadTime" class="badge bg-warning"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Размер страницы:</strong><br>
+                            <span id="techPageSize" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Gzip сжатие:</strong><br>
+                            <span id="techGzip" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Адаптивный дизайн (viewport):</strong><br>
+                            <span id="techViewport" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Media queries:</strong><br>
+                            <span id="techMediaQueries" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Скрипты:</strong><br>
+                            <span id="techScripts" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Стилей (CSS):</strong><br>
+                            <span id="techStyles" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Всего запросов:</strong><br>
+                            <span id="techRequests" class="badge bg-secondary"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UX блок -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">👥 UX и дизайн</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Контактная информация:</strong><br>
+                            <span id="uxContacts" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Телефон:</strong><br>
+                            <span id="uxPhone" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Email:</strong><br>
+                            <span id="uxEmail" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>CTA (кнопки действия):</strong><br>
+                            <span id="uxCTA" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Форма обратной связи:</strong><br>
+                            <span id="uxForm" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Навигация (меню):</strong><br>
+                            <span id="uxNav" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Поиск:</strong><br>
+                            <span id="uxSearch" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Хлебные крошки:</strong><br>
+                            <span id="uxBreadcrumbs" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Контрастность:</strong><br>
+                            <span id="uxContrast" class="badge bg-secondary"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Конверсия блок -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">💰 Конверсионные элементы</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Email форма:</strong><br>
+                            <span id="convEmail" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Online чат:</strong><br>
+                            <span id="convChat" class="badge"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Отзывы/кейсы:</strong><br>
+                            <span id="convReviews" class="badge"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ключевые слова блок -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">📈 Ключевые метрики</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <strong>Всего слов на странице:</strong><br>
+                            <span id="metricsWordCount" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Плотность ключевых слов:</strong><br>
+                            <span id="metricsKeywordDensity" class="badge bg-secondary"></span>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Топ-5 ключевых фраз (триграммы):</strong><br>
+                            <div id="metricsTopKeywords"></div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <strong>Топ-5 слов:</strong><br>
+                            <div id="metricsTopWords"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <button class="btn btn-lg btn-primary" id="addCompetitorsBtn">➕ Добавить конкурентов для сравнения</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Добавление конкурентов -->
+        <div id="competitorsForm" class="section d-none">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">🏆 Добавление конкурентов</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Ключевые фразы с вашего сайта:</strong></p>
+                    <div id="keywordsList" class="mb-4"></div>
+
+                    <h5>Добавьте до 3 конкурентов для анализа:</h5>
+                    <div id="competitorsInputs"></div>
+                    <button class="btn btn-success mt-3" id="analyzeCompetitorsBtn">
+                        <span id="compBtnText">Анализировать конкурентов</span>
+                        <span id="compBtnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                    </button>
+                    <button class="btn btn-secondary mt-3 ms-2" id="skipCompetitorsBtn">Пропустить анализ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Таблица сравнения -->
+        <div id="comparisonSection" class="section d-none">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">📊 Сравнение с конкурентами</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="comparisonTable">
+                            <thead class="table-dark"></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>📌 Выводы и рекомендации</h5>
+                        <div id="conclusions"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экспорт -->
+        <div id="exportSection" class="section d-none">
+            <div class="card shadow-sm mb-4 bg-light">
+                <div class="card-body text-center">
+                    <button class="btn btn-lg btn-success" id="exportJsonBtn">💾 Скачать отчёт (JSON)</button>
+                    <button class="btn btn-lg btn-success ms-2" id="exportCsvBtn">📄 Скачать отчёт (CSV)</button>
+                    <button class="btn btn-lg btn-info ms-2" id="copyLinkBtn">🔗 Скопировать ссылку на результат</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <p>SEO Audit Pro © 2024 | Бесплатный анализ сайтов и конкурентов</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>
