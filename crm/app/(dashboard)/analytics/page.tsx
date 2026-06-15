@@ -19,7 +19,7 @@ export default function AnalyticsPage() {
     fetch('/api/analytics').then(r => r.json()).then(setData)
   }, [])
 
-  if (!data) return (
+  if (!data || !data.stageStats) return (
     <div className="flex flex-col flex-1">
       <Header title="Аналитика" />
       <div className="flex-1 flex items-center justify-center text-gray-400">Загрузка...</div>
