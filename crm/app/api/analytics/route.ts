@@ -34,10 +34,9 @@ export async function GET() {
         by: ['status'],
         _count: { status: true },
       }),
-      prisma.deal.aggregate({
+      prisma.deal.findMany({
         where: { status: 'WON' },
-        _count: { id: true },
-        _sum: { amount: true },
+        select: { amount: true },
       }),
     ])
 
@@ -47,7 +46,10 @@ export async function GET() {
       total: s.deals.reduce((sum, d) => sum + d.amount, 0),
     }))
 
-    const wonTotal = { count: wonStats._count.id, amount: wonStats._sum.amount ?? 0 }
+    const wonTotal = {
+      count: wonStats.length,
+      amount: wonStats.reduce((sum, d) => sum + d.amount, 0),
+    }
 
     // Группируем сделки по месяцам вручную
     const monthMap = new Map<string, { count: number; total: number }>()
