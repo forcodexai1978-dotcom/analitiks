@@ -31,6 +31,7 @@ export default function AnalyticsPage() {
 
   const totalDeals = data.openCount ?? 0
   const totalAmount = data.openAmount ?? 0
+  const totalStageCount = data.stageStats.reduce((sum, s) => sum + s.count, 0)
 
   const taskStatusLabels: Record<string, string> = {
     PENDING: 'Ожидают', IN_PROGRESS: 'В работе', DONE: 'Выполнено', OVERDUE: 'Просрочено',
@@ -68,7 +69,7 @@ export default function AnalyticsPage() {
                 <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
                   <div
                     className="h-full bg-indigo-500 rounded-full flex items-center justify-end pr-2"
-                    style={{ width: `${totalDeals ? Math.max(4, (s.count / totalDeals) * 100) : 4}%` }}
+                    style={{ width: `${totalStageCount ? Math.max(4, (s.count / totalStageCount) * 100) : 4}%` }}
                   >
                     <span className="text-white text-xs font-medium">{s.count}</span>
                   </div>
