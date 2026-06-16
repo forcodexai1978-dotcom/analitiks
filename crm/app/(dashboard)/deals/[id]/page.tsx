@@ -62,6 +62,7 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
   const router = useRouter()
   const [deal, setDeal] = useState<Deal | null>(null)
   const [wonStageId, setWonStageId] = useState<string | null>(null)
+  const [firstStageId, setFirstStageId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [editTitle, setEditTitle] = useState(false)
   const [titleDraft, setTitleDraft] = useState('')
@@ -84,8 +85,11 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
     setLoading(false)
     if (pipeRes.ok) {
       const pipes = await pipeRes.json()
-      const wonStage = pipes[0]?.stages?.find((s: { name: string; id: string }) => s.name === 'Выполнено')
-      if (wonStage) setWonStageId(wonStage.id)
+      const stages = pipes[0]?.stages ?? []
+      const wonStage   = stages.find((s: { name: string; id: string }) => s.name === 'Выполнено')
+      const firstStage = stages.find((s: { name: string; id: string }) => s.name !== 'Выполнено')
+      if (wonStage)   setWonStageId(wonStage.id)
+      if (firstStage) setFirstStageId(firstStage.id)
     }
   }, [id, router])
 
@@ -230,7 +234,7 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
             <div className="mt-2 text-sm text-red-400 italic">Причина: «{deal.lostReason}»</div>
           )}
           {deal.status !== 'OPEN' && (
-            <button onClick={() => patch({ status: 'OPEN', lostReason: null })}
+            <button onClick={() => patch({ status: 'OPEN', lostReason: null, closedAt: null, ...(firstStageId ? { stageId: firstStageId } : {}) })}
               className="mt-3 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600">↩ Вернуть в работу</button>
           )}
 

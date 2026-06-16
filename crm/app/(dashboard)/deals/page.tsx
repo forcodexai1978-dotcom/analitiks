@@ -93,21 +93,29 @@ export default function DealsPage() {
   }
 
   async function setStatus(id: string, status: 'WON' | 'LOST' | 'OPEN', lostReason?: string) {
-    const wonStage = status === 'WON' ? stages.find(s => s.name === 'Выполнено') : null
+    const wonStage  = status === 'WON'  ? stages.find(s => s.name === 'Выполнено') : null
+    const firstStage = status === 'OPEN' ? stages.find(s => s.name !== 'Выполнено') : null
 
     await fetch(`/api/deals/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         status,
-        ...(wonStage ? { stageId: wonStage.id, closedAt: new Date().toISOString() } : {}),
+        ...(wonStage   ? { stageId: wonStage.id,   closedAt: new Date().toISOString() } : {}),
+        ...(firstStage ? { stageId: firstStage.id, closedAt: null } : {}),
         ...(status === 'LOST' && lostReason !== undefined ? { lostReason } : {}),
         ...(status === 'OPEN' ? { lostReason: null } : {}),
       }),
     })
     setDeals(prev => prev.map(d =>
       d.id === id
-        ? { ...d, status, ...(wonStage ? { stageId: wonStage.id } : {}), ...(lostReason !== undefined ? { lostReason } : {}) }
+        ? {
+            ...d,
+            status,
+            ...(wonStage   ? { stageId: wonStage.id }   : {}),
+            ...(firstStage ? { stageId: firstStage.id } : {}),
+            ...(lostReason !== undefined ? { lostReason } : {}),
+          }
         : d
     ))
   }
