@@ -61,6 +61,7 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
   const { id } = use(params)
   const router = useRouter()
   const [deal, setDeal] = useState<Deal | null>(null)
+  const [wonStageId, setWonStageId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [editTitle, setEditTitle] = useState(false)
   const [titleDraft, setTitleDraft] = useState('')
@@ -71,13 +72,21 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
   const [lostReasons, setLostReasons] = useState<string[]>([])
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/deals/${id}`)
-    if (!res.ok) { router.push('/deals'); return }
-    const data = await res.json()
+    const [dealRes, pipeRes] = await Promise.all([
+      fetch(`/api/deals/${id}`),
+      fetch('/api/pipelines'),
+    ])
+    if (!dealRes.ok) { router.push('/deals'); return }
+    const data = await dealRes.json()
     setDeal(data)
     setTitleDraft(data.title)
     setAmountDraft(String(data.amount))
     setLoading(false)
+    if (pipeRes.ok) {
+      const pipes = await pipeRes.json()
+      const wonStage = pipes[0]?.stages?.find((s: { name: string; id: string }) => s.name === 'Выполнено')
+      if (wonStage) setWonStageId(wonStage.id)
+    }
   }, [id, router])
 
   useEffect(() => { load() }, [load])
@@ -211,7 +220,7 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
 
           {deal.status === 'OPEN' && (
             <div className="flex gap-2 mt-4">
-              <button onClick={() => patch({ status: 'WON' })}
+              <button onClick={() => patch({ status: 'WON', closedAt: new Date().toISOString(), ...(wonStageId ? { stageId: wonStageId } : {}) })}
                 className="bg-green-500 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-green-600">Выиграна</button>
               <button onClick={() => { setLostReasons([]); setLostModal(true) }}
                 className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm px-4 py-1.5 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50">Проиграна</button>
