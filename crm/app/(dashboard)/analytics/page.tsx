@@ -11,6 +11,7 @@ interface AnalyticsData {
   managerStats: { name: string; wonDeals: number; wonAmount: number }[]
   taskStats: { status: string; _count: { status: number } }[]
   wonTotal: { count: number; amount: number }
+  lostTotal: { count: number; amount: number }
   openCount: number
   openAmount: number
 }
@@ -41,7 +42,7 @@ export default function AnalyticsPage() {
     <div className="flex flex-col flex-1">
       <Header title="Аналитика" />
       <div className="flex-1 overflow-auto p-6 space-y-6 bg-gray-50 dark:bg-gray-950">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Открытых сделок</div>
             <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{totalDeals}</div>
@@ -57,6 +58,14 @@ export default function AnalyticsPage() {
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
             <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Выручка (WON)</div>
             <div className="text-3xl font-bold text-green-600">{formatCurrency(data.wonTotal?.amount ?? 0)}</div>
+          </div>
+          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Проиграно</div>
+            <div className="text-3xl font-bold text-red-500">{data.lostTotal?.count ?? 0}</div>
+          </div>
+          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Сумма проигранных</div>
+            <div className="text-3xl font-bold text-red-400">{formatCurrency(data.lostTotal?.amount ?? 0)}</div>
           </div>
         </div>
 

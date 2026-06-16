@@ -40,6 +40,7 @@ async function main() {
           { name: 'Оплачено',           order: 9,  color: '#84cc16' },
           { name: 'Ждёт поставки',      order: 10, color: '#14b8a6' },
           { name: 'Выполнено',          order: 11, color: '#10b981' },
+          { name: 'Проиграна',          order: 12, color: '#ef4444' },
         ],
       },
     },

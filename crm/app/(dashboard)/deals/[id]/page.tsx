@@ -62,6 +62,7 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
   const router = useRouter()
   const [deal, setDeal] = useState<Deal | null>(null)
   const [wonStageId, setWonStageId] = useState<string | null>(null)
+  const [lostStageId, setLostStageId] = useState<string | null>(null)
   const [firstStageId, setFirstStageId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [editTitle, setEditTitle] = useState(false)
@@ -87,9 +88,11 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
       const pipes = await pipeRes.json()
       const stages = pipes[0]?.stages ?? []
       const wonStage   = stages.find((s: { name: string; id: string }) => s.name === 'Выполнено')
-      const firstStage = stages.find((s: { name: string; id: string }) => s.name !== 'Выполнено')
+      const lostStage  = stages.find((s: { name: string; id: string }) => s.name === 'Проиграна')
+      const firstStage = stages.find((s: { name: string; id: string }) => s.name !== 'Выполнено' && s.name !== 'Проиграна')
       if (wonStage)   setWonStageId(wonStage.id)
       if (firstStage) setFirstStageId(firstStage.id)
+      if (lostStage)  setLostStageId(lostStage.id)
     }
   }, [id, router])
 
@@ -267,7 +270,10 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
                   <button onClick={() => setLostModal(false)}
                     className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">Отмена</button>
                   <button
-                    onClick={() => { patch({ status: 'LOST', lostReason: lostReasons.join(', ') }); setLostModal(false) }}
+                    onClick={() => {
+                      patch({ status: 'LOST', lostReason: lostReasons.join(', '), closedAt: new Date().toISOString(), ...(lostStageId ? { stageId: lostStageId } : {}) })
+                      setLostModal(false)
+                    }}
                     disabled={lostReasons.length === 0}
                     className="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm hover:bg-red-600 disabled:opacity-40">Закрыть сделку</button>
                 </div>

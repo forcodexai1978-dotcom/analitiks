@@ -9,8 +9,9 @@ export async function GET() {
   if (!session) return Response.json({ error: 'Не авторизован' }, { status: 401 })
 
   try {
-    const [dealsByStage, allDeals, topManagers, taskStats, wonStats] = await Promise.all([
+    const [dealsByStage, allDeals, topManagers, taskStats, wonStats, lostStats] = await Promise.all([
       prisma.stage.findMany({
+        where: { name: { notIn: ['Проиграна'] } },
         include: {
           deals: { where: { status: { not: 'LOST' } }, select: { amount: true, status: true } },
         },
@@ -38,6 +39,10 @@ export async function GET() {
         where: { status: 'WON' },
         select: { amount: true },
       }),
+      prisma.deal.findMany({
+        where: { status: 'LOST' },
+        select: { amount: true },
+      }),
     ])
 
     const stageStats = dealsByStage.map(s => ({
@@ -52,6 +57,11 @@ export async function GET() {
     const wonTotal = {
       count: wonStats.length,
       amount: wonStats.reduce((sum, d) => sum + d.amount, 0),
+    }
+
+    const lostTotal = {
+      count: lostStats.length,
+      amount: lostStats.reduce((sum, d) => sum + d.amount, 0),
     }
 
     // Группируем сделки по месяцам вручную
@@ -76,7 +86,7 @@ export async function GET() {
       .sort((a, b) => b.wonAmount - a.wonAmount)
       .slice(0, 5)
 
-    return Response.json({ stageStats, dealsByMonth, managerStats, taskStats, wonTotal, openCount, openAmount })
+    return Response.json({ stageStats, dealsByMonth, managerStats, taskStats, wonTotal, lostTotal, openCount, openAmount })
   } catch (error) {
     log.error('Ошибка получения аналитики', error)
     return Response.json({ error: 'Ошибка сервера' }, { status: 500 })

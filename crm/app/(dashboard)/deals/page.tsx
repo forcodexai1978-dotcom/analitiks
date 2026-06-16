@@ -93,8 +93,9 @@ export default function DealsPage() {
   }
 
   async function setStatus(id: string, status: 'WON' | 'LOST' | 'OPEN', lostReason?: string) {
-    const wonStage  = status === 'WON'  ? stages.find(s => s.name === 'Выполнено') : null
-    const firstStage = status === 'OPEN' ? stages.find(s => s.name !== 'Выполнено') : null
+    const wonStage   = status === 'WON'  ? stages.find(s => s.name === 'Выполнено') : null
+    const lostStage  = status === 'LOST' ? stages.find(s => s.name === 'Проиграна') : null
+    const firstStage = status === 'OPEN' ? stages.find(s => s.name !== 'Выполнено' && s.name !== 'Проиграна') : null
 
     await fetch(`/api/deals/${id}`, {
       method: 'PATCH',
@@ -102,6 +103,7 @@ export default function DealsPage() {
       body: JSON.stringify({
         status,
         ...(wonStage   ? { stageId: wonStage.id,   closedAt: new Date().toISOString() } : {}),
+        ...(lostStage  ? { stageId: lostStage.id,  closedAt: new Date().toISOString() } : {}),
         ...(firstStage ? { stageId: firstStage.id, closedAt: null } : {}),
         ...(status === 'LOST' && lostReason !== undefined ? { lostReason } : {}),
         ...(status === 'OPEN' ? { lostReason: null } : {}),
@@ -113,6 +115,7 @@ export default function DealsPage() {
             ...d,
             status,
             ...(wonStage   ? { stageId: wonStage.id }   : {}),
+            ...(lostStage  ? { stageId: lostStage.id }  : {}),
             ...(firstStage ? { stageId: firstStage.id } : {}),
             ...(lostReason !== undefined ? { lostReason } : {}),
           }
@@ -177,7 +180,13 @@ export default function DealsPage() {
                       ref={provided.innerRef}
                       {...provided.droppableProps}
                       className={`flex-1 rounded-xl p-2 min-h-24 space-y-2 transition-colors ${
-                        snapshot.isDraggingOver ? 'bg-indigo-50 dark:bg-indigo-950' : 'bg-gray-100 dark:bg-gray-800'
+                        snapshot.isDraggingOver
+                          ? stage.name === 'Проиграна' ? 'bg-red-50 dark:bg-red-950'
+                          : stage.name === 'Выполнено' ? 'bg-green-50 dark:bg-green-950'
+                          : 'bg-indigo-50 dark:bg-indigo-950'
+                          : stage.name === 'Проиграна' ? 'bg-red-50/50 dark:bg-red-950/30'
+                          : stage.name === 'Выполнено' ? 'bg-green-50/50 dark:bg-green-950/30'
+                          : 'bg-gray-100 dark:bg-gray-800'
                       }`}
                     >
                       {stageDeals(stage.id).map((deal, index) => {
