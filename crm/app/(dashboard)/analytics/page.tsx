@@ -77,7 +77,10 @@ export default function AnalyticsPage() {
                 <div className="w-32 text-sm text-gray-600 truncate">{s.name}</div>
                 <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
                   <div
-                    className="h-full bg-indigo-500 rounded-full flex items-center justify-end pr-2"
+                    className={`h-full rounded-full flex items-center justify-end pr-2 ${
+                      s.name === 'Проиграна' ? 'bg-red-500' :
+                      s.name === 'Выполнено' ? 'bg-green-500' : 'bg-indigo-500'
+                    }`}
                     style={{ width: `${totalStageCount ? Math.max(4, (s.count / totalStageCount) * 100) : 4}%` }}
                   >
                     <span className="text-white text-xs font-medium">{s.count}</span>

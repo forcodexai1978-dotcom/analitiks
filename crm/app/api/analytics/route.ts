@@ -11,9 +11,8 @@ export async function GET() {
   try {
     const [dealsByStage, allDeals, topManagers, taskStats, wonStats, lostStats] = await Promise.all([
       prisma.stage.findMany({
-        where: { name: { notIn: ['Проиграна'] } },
         include: {
-          deals: { where: { status: { not: 'LOST' } }, select: { amount: true, status: true } },
+          deals: { select: { amount: true, status: true } },
         },
         orderBy: { order: 'asc' },
       }),
@@ -45,11 +44,16 @@ export async function GET() {
       }),
     ])
 
-    const stageStats = dealsByStage.map(s => ({
-      name: s.name,
-      count: s.deals.length,
-      total: s.deals.reduce((sum, d) => sum + d.amount, 0),
-    }))
+    const stageStats = dealsByStage.map(s => {
+      const filtered = s.name === 'Проиграна'
+        ? s.deals.filter(d => d.status === 'LOST')
+        : s.deals.filter(d => d.status !== 'LOST')
+      return {
+        name: s.name,
+        count: filtered.length,
+        total: filtered.reduce((sum, d) => sum + d.amount, 0),
+      }
+    })
 
     const openCount = allDeals.length
     const openAmount = allDeals.reduce((sum, d) => sum + d.amount, 0)
