@@ -85,6 +85,7 @@ model Deal {
   assignedToId String?
   assignedTo   User?      @relation("AssignedDeals", fields: [assignedToId], references: [id])
   closedAt     DateTime?
+  lostReason   String?
   tags         String     @default("[]")
   status       DealStatus @default(OPEN)
   tasks        Task[]

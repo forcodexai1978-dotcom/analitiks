@@ -60,6 +60,7 @@ export async function PATCH(request: NextRequest, ctx: RouteContext<'/api/deals/
         ...(body.assignedToId !== undefined && { assignedToId: body.assignedToId }),
         ...(body.tags !== undefined && { tags: JSON.stringify(body.tags) }),
         ...(body.closedAt !== undefined && { closedAt: body.closedAt ? new Date(body.closedAt) : null }),
+        ...(body.lostReason !== undefined && { lostReason: body.lostReason }),
       },
       include: { stage: true, contact: true, company: true, assignedTo: { select: { id: true, name: true } } },
     })

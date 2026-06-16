@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 
 interface Deal {
-  id: string; title: string; amount: number; status: string; createdAt: string; updatedAt: string; closedAt: string | null; tags: string
+  id: string; title: string; amount: number; status: string; createdAt: string; updatedAt: string; closedAt: string | null; tags: string; lostReason: string | null
   stage: { id: string; name: string; color: string }
   contact: { id: string; firstName: string; lastName: string; phones: string; emails: string; position: string | null } | null
   company: { id: string; name: string } | null
@@ -56,6 +56,8 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
   const [editAmount, setEditAmount] = useState(false)
   const [amountDraft, setAmountDraft] = useState('')
   const [noteText, setNoteText] = useState('')
+  const [lostModal, setLostModal] = useState(false)
+  const [lostReason, setLostReason] = useState('')
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/deals/${id}`)
@@ -200,13 +202,41 @@ export default function DealPage({ params }: { params: Promise<{ id: string }> }
             <div className="flex gap-2 mt-4">
               <button onClick={() => patch({ status: 'WON' })}
                 className="bg-green-500 text-white text-sm px-4 py-1.5 rounded-lg hover:bg-green-600">Выиграна</button>
-              <button onClick={() => patch({ status: 'LOST' })}
+              <button onClick={() => { setLostReason(''); setLostModal(true) }}
                 className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm px-4 py-1.5 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50">Проиграна</button>
             </div>
           )}
+          {deal.status === 'LOST' && deal.lostReason && (
+            <div className="mt-2 text-sm text-red-400 italic">Причина: «{deal.lostReason}»</div>
+          )}
           {deal.status !== 'OPEN' && (
-            <button onClick={() => patch({ status: 'OPEN' })}
+            <button onClick={() => patch({ status: 'OPEN', lostReason: null })}
               className="mt-3 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600">↩ Вернуть в работу</button>
+          )}
+
+          {lostModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100">Причина отказа</h2>
+                  <button onClick={() => setLostModal(false)}><X size={20} /></button>
+                </div>
+                <textarea
+                  value={lostReason}
+                  onChange={e => setLostReason(e.target.value)}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
+                  rows={3}
+                  placeholder="Например: высокая цена, выбрали конкурента..."
+                  autoFocus
+                />
+                <div className="flex gap-3 mt-4">
+                  <button onClick={() => setLostModal(false)}
+                    className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">Отмена</button>
+                  <button onClick={() => { patch({ status: 'LOST', lostReason }); setLostModal(false) }}
+                    className="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm hover:bg-red-600">Закрыть сделку</button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 

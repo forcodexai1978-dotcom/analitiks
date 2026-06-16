@@ -13,6 +13,7 @@ interface Deal {
   contact?: { firstName: string; lastName: string } | null
   assignedTo?: { name: string } | null
   tags: string
+  lostReason?: string | null
 }
 
 const statusBadge: Record<string, { label: string; cls: string }> = {
@@ -26,6 +27,7 @@ export default function DealsPage() {
   const [deals, setDeals] = useState<Deal[]>([])
   const [showModal, setShowModal] = useState(false)
   const [newDeal, setNewDeal] = useState({ title: '', amount: '', stageId: '' })
+  const [lostModal, setLostModal] = useState<{ dealId: string; reason: string } | null>(null)
 
   const load = useCallback(async () => {
     const [pRes, dRes] = await Promise.all([
@@ -79,13 +81,25 @@ export default function DealsPage() {
     }
   }
 
-  async function setStatus(id: string, status: 'WON' | 'LOST' | 'OPEN') {
+  async function setStatus(id: string, status: 'WON' | 'LOST' | 'OPEN', lostReason?: string) {
     await fetch(`/api/deals/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({
+        status,
+        ...(status === 'LOST' && lostReason !== undefined ? { lostReason } : {}),
+        ...(status === 'OPEN' ? { lostReason: null } : {}),
+      }),
     })
-    setDeals(prev => prev.map(d => d.id === id ? { ...d, status } : d))
+    setDeals(prev => prev.map(d =>
+      d.id === id ? { ...d, status, ...(lostReason !== undefined ? { lostReason } : {}) } : d
+    ))
+  }
+
+  async function confirmLost() {
+    if (!lostModal) return
+    await setStatus(lostModal.dealId, 'LOST', lostModal.reason)
+    setLostModal(null)
   }
 
   async function deleteDeal(id: string) {
@@ -182,10 +196,13 @@ export default function DealsPage() {
                                       className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded hover:bg-green-100"
                                     >Выиграна</button>
                                     <button
-                                      onClick={() => setStatus(deal.id, 'LOST')}
+                                      onClick={() => setLostModal({ dealId: deal.id, reason: '' })}
                                       className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded hover:bg-red-100"
                                     >Проиграна</button>
                                   </div>
+                                )}
+                                {deal.status === 'LOST' && deal.lostReason && (
+                                  <div className="text-xs text-red-400 mt-1 italic">«{deal.lostReason}»</div>
                                 )}
                                 {deal.status !== 'OPEN' && (
                                   <button
@@ -207,6 +224,35 @@ export default function DealsPage() {
           </div>
         </DragDropContext>
       </div>
+
+      {lostModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100">Причина отказа</h2>
+              <button onClick={() => setLostModal(null)}><X size={20} /></button>
+            </div>
+            <textarea
+              value={lostModal.reason}
+              onChange={e => setLostModal(p => p ? { ...p, reason: e.target.value } : null)}
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
+              rows={3}
+              placeholder="Например: высокая цена, выбрали конкурента..."
+              autoFocus
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => setLostModal(null)}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+              >Отмена</button>
+              <button
+                onClick={confirmLost}
+                className="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm hover:bg-red-600"
+              >Закрыть сделку</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
