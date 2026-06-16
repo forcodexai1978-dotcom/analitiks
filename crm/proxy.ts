@@ -4,7 +4,12 @@ import { getToken } from 'next-auth/jwt'
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (pathname.startsWith('/api/auth') || pathname === '/login') {
+  if (
+    pathname.startsWith('/api/auth') ||
+    pathname === '/login' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password'
+  ) {
     return NextResponse.next()
   }
 

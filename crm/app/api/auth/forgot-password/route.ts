@@ -12,20 +12,19 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({ where: { email } })
 
-    // Отвечаем одинаково независимо от того, найден ли пользователь
-    if (user) {
-      await prisma.passwordResetToken.deleteMany({ where: { email } })
-
-      const token = crypto.randomBytes(32).toString('hex')
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 час
-
-      await prisma.passwordResetToken.create({ data: { token, email, expiresAt } })
-
-      await sendPasswordResetEmail(email, token)
-      log.info('Токен сброса пароля создан', { email })
-    } else {
+    if (!user) {
       log.warn('Запрос сброса для несуществующего email', { email })
+      return Response.json({ error: 'Пользователь с таким email не найден' }, { status: 404 })
     }
+
+    await prisma.passwordResetToken.deleteMany({ where: { email } })
+
+    const token = crypto.randomBytes(32).toString('hex')
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
+
+    await prisma.passwordResetToken.create({ data: { token, email, expiresAt } })
+    await sendPasswordResetEmail(email, token)
+    log.info('Токен сброса пароля создан', { email })
 
     return Response.json({ ok: true })
   } catch (error) {
