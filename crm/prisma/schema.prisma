@@ -137,6 +137,14 @@ enum TaskStatus {
   OVERDUE
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 model Activity {
   id        String       @id @default(cuid())
   type      ActivityType
